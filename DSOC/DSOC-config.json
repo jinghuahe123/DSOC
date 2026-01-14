@@ -1,0 +1,8 @@
+{
+    "parameters": {
+        "device_name": "TEST-PC",
+        "enable_automatic_optimisations": true,
+        "reminder_time": 600,
+        "update_time": 300
+    }
+}

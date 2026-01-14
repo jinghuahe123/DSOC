@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="DSOC/DSOC.vcxproj" Id="e26a05f1-0567-4a50-b5f7-d9db5c4cdc74" />
+</Solution>
