@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/DSOC/DSOC-data.data
+/Basic Timeline Tracking.txt
+/DSOC/DSOC-config.json
