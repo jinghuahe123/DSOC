@@ -44,8 +44,10 @@ public:
 
     struct CalendarEvent {
         std::string title;
-        SYSTEMTIME start;
-        SYSTEMTIME end;
+        int startHour;
+        int startMinute;
+        int endHour;
+        int endMinute;
         std::string description;
     };
 
@@ -57,10 +59,7 @@ public:
 private:
   
     _ApplicationPtr pOutlook;
-    //HRESULT hr;
     _NameSpacePtr pNamespace;
-    //MAPIFolderPtr pCalendarFolder;
-    //_ItemsPtr pItems;
     bool initialized;
     
     // Helper function to convert _bstr_t to std::string

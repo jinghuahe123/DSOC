@@ -12,8 +12,6 @@ MCalendar::MCalendar() {
 }
 
 MCalendar::~MCalendar() {
-    //pItems.Release();
-    //pCalendarFolder.Release();
     pNamespace->Logoff();
     pNamespace.Release();
     pOutlook.Release();
@@ -124,10 +122,14 @@ std::vector<MCalendar::CalendarEvent> MCalendar::getTodaysEvents(_ItemsPtr& pIte
                         CalendarEvent event; // struct that stores properties of each individual event
 
                         event.title = BstrToString(pCalendarEvent->GetSubject());
-                        event.start = start;
+                        event.startHour = start.wHour;
+                        event.startMinute = start.wMinute;
 
                         // DATE end = pCalendarEvent->GetEnd(); // convert again to SYSTEMTIME
-                        VariantTimeToSystemTime(pCalendarEvent->GetEnd(), &event.end); // get rid of original end variable
+                        SYSTEMTIME end;
+                        VariantTimeToSystemTime(pCalendarEvent->GetEnd(), &end); // get rid of original end variable
+                        event.endHour = end.wHour;
+                        event.endMinute = end.wMinute;
 
                         event.description = BstrToString(pCalendarEvent->GetBody());
 
@@ -149,7 +151,7 @@ std::vector<MCalendar::CalendarEvent> MCalendar::getTodaysEvents(_ItemsPtr& pIte
             } catch (_com_error& itemError) {
                 // skip inaccessible stuff
                 // what kind of error should this throw?
-                std::cerr << "Failed to get a calendar item." << std::endl;
+                std::cerr << "Failed to get a calendar item: " << std::endl;
             }
 
             pIndividualItem = pItems->GetNext(); // loops by getting next item in list

@@ -32,5 +32,8 @@
     <ClInclude Include="ParameterHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NotificationHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

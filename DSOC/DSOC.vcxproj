@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MCalendar.h" />
+    <ClInclude Include="NotificationHandler.h" />
     <ClInclude Include="ParameterHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
