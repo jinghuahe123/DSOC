@@ -14,6 +14,18 @@ ParameterHandler::ParameterHandler(const std::string& file_name, const std::stri
         std::cerr << "Please input program parameters into .json file." << std::endl;
         exit(21);
     }
+
+    // error checking: make sure data file exists for reading files later
+    std::ifstream dataCheck(dataFileName);
+    if (!dataCheck.good()) {
+        dataCheck.close();
+        std::ofstream dataFile(dataFileName);
+        dataFile << "{}"; 
+        dataFile.close();
+    }
+    else {
+        dataCheck.close();
+    }
 }
 
 // returns if file exists
