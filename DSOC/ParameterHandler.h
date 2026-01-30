@@ -31,6 +31,7 @@ public:
 
 	using json = nlohmann::json;
 	// write events to data file
+	// figure out why requires friend attribute to compile
 	friend void to_json(json& j, const CalendarEvent event) {
 		j = json{
 			{"title", event.title},

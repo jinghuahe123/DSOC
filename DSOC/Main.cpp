@@ -5,6 +5,8 @@
 #include <thread>
 #include <stdio.h>
 #include <unordered_set>
+#include <mutex>
+#include <atomic>
 
 #include "MCalendar.h"
 #include "ParameterHandler.h"
@@ -31,7 +33,7 @@
 // set up broker to allow outlook calendar categorisation fields to automatically put a notificaion to a certain device?
 
 
-
+// main struct for storing each calendar event
 struct CalendarEvent {
     std::string title;
     int startHour;
@@ -41,7 +43,7 @@ struct CalendarEvent {
     std::string description;
     std::string targetDevice;
 
-    // used in comparing CalendarEvents
+    // used in comparing if event is new or old
     bool operator==(const auto& events) const {
         return title == events.title &&
             startHour == events.startHour &&
@@ -68,6 +70,7 @@ struct CalendarEventHash { // dont hash index, order of events may change
 };
 
 // careful when using not to pass newEvents and oldEvents backwards
+// compares and returns what is different in new events from old
 void compareCalendarEvents(const std::vector<CalendarEvent>& newEvents, const std::vector<CalendarEvent>& oldEvents, std::vector<CalendarEvent>& duplicateEvents, std::vector<CalendarEvent>& uniqueNewEvents) {
     std::unordered_set<CalendarEvent, CalendarEventHash> vecOldEventsSet(oldEvents.begin(), oldEvents.end());
 
@@ -204,26 +207,28 @@ void displayEvents(std::vector<CalendarEvent> events) {
     }
 }
 
-int main() {
-    const std::string file_name = "DSOC-config.json";
-    const std::string data_file_name = "DSOC-data.data";
-    // const std::wstring appID = L"DeviceSpecificMicrosoftCalendar";
+// struct of new and old events
+struct comparedEvents {
+    std::vector<CalendarEvent> duplicateEvents;
+    std::vector<CalendarEvent> uniqueNewEvents;
+};
 
-    // initialise objets
-    MCalendar myCalendar;
-    ParameterHandler myParams(file_name, data_file_name);
+// thread locks and parameters
+std::mutex checkEventsMutex;
+comparedEvents latestEvents; // global variable for struct of new and old events to access between threads
+std::atomic<bool> checkEventsRunning = true;
 
-    // get program settings from log file
-    ParameterHandler::ParameterData data = myParams.getData();
 
+comparedEvents checkEvents(MCalendar& myCalendar, ParameterHandler& myParams, ParameterHandler::ParameterData& data) {
     // get calendar events and parse for relevant events for the current device
     std::vector<CalendarEvent> events = getEvents(myCalendar);
+    // displayEvents(events);
     std::vector<CalendarEvent> relevantEvents;
     if (!events.empty()) {
         for (CalendarEvent& event : events) {
             event.targetDevice = getTarget(event.description);
 
-            if (event.targetDevice == data.currentDevice) {
+            if (event.targetDevice == data.currentDevice) { // does it require checking date as well as time, or does following logfile write handle that already?
                 relevantEvents.push_back(event);
             }
         }
@@ -235,16 +240,98 @@ int main() {
     std::vector<ParameterHandler::CalendarEvent> logEvents = formatEventsToLogfile(relevantEvents);
     myParams.writeEvents(logEvents);
 
+    // create struct for easy return
+    comparedEvents comparedevents;
+
     // parse for newly added events since last update
-    std::vector<CalendarEvent> duplicateEvents;
-    std::vector<CalendarEvent> uniqueNewEvents;
-    compareCalendarEvents(relevantEvents, previousEvents, duplicateEvents, uniqueNewEvents);
+    // std::vector<CalendarEvent> duplicateEvents;
+    // std::vector<CalendarEvent> uniqueNewEvents;
+    compareCalendarEvents(relevantEvents, previousEvents, comparedevents.duplicateEvents, comparedevents.uniqueNewEvents);
+
+    return comparedevents;
+}
+
+void checkEventsThread(ParameterHandler &myParams, ParameterHandler::ParameterData &data) {
+    // initialise calendar in thread
+    // rquires initilisation of instance and also object separately - outlook instance is thread-specific
+    CoInitialize(NULL);
+    MCalendar myCalendar;
+
+    using namespace std::chrono;
+
+    auto lastRun = steady_clock::now() - seconds(data.updateTime); // force update on furst run
+
+    while (checkEventsRunning) {
+        auto now = steady_clock::now();
+
+        if (now - lastRun >= seconds(data.updateTime)) { // if more time has passed than json file parameter specifies
+
+            comparedEvents result = checkEvents(myCalendar, myParams, data);
+
+            { // new context for mutex lock
+                std::lock_guard<std::mutex> lock(checkEventsMutex);
+                latestEvents = result;
+            } // end mutex lock
+
+            lastRun = now;
+        }
+
+        // slight delay for stability
+        // how many ms should this be? - req. balance speed and cpu usage
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+
+    // deinitialise the outlook instance
+    CoUninitialize();
+    
+}
 
 
-    std::cout << "Duplicate Events: " << std::endl;
-    displayEvents(duplicateEvents);
-    std::cout << std::endl << std::endl << "Newly Added Events" << std::endl;
-    displayEvents(uniqueNewEvents);
+
+int main() {
+    // set program basic parameters
+    const std::string file_name = "DSOC-config.json"; // user config file filename
+    const std::string data_file_name = "DSOC-data.data"; // program events data filename
+    // const std::wstring appID = L"DeviceSpecificMicrosoftCalendar";
+
+    // initialise objets
+    // MCalendar myCalendar;
+    ParameterHandler myParams(file_name, data_file_name);
+
+    // get program settings from log file
+    ParameterHandler::ParameterData data = myParams.getData();
+
+    // start the thread that constantly checks for new events
+    std::thread worker(checkEventsThread,
+        std::ref(myParams),
+        std::ref(data));
+
+    // requried so first display of events is not null
+    std::cout << "Waiting for Outlook Calendar to start..." << std::endl << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(2)); 
+
+    // std::cout << data.currentDevice << std::endl;
+
+    while(1) {
+        { // new context specifically for mutex lock
+            std::lock_guard<std::mutex> lock(checkEventsMutex); // lock the context for safe data accessing
+
+            std::cout << "Duplicate Events: " << std::endl;
+            displayEvents(latestEvents.duplicateEvents);
+            std::cout << std::endl << std::endl << "Newly Added Events" << std::endl;
+            displayEvents(latestEvents.uniqueNewEvents);
+            std::cout << std::endl << std::endl << std::endl << std::endl;
+        } // end mutex lock context
+
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
+
+    // stop all threads before exiting
+    checkEventsRunning = false;
+    worker.join();
+
+    
 
     return 0;
 }
+

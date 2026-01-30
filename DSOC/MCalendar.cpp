@@ -4,7 +4,7 @@ MCalendar::MCalendar() {
 #ifndef _WIN32
     std::cerr << "Does not support current operating system. Please run on Windows." << std::endl; 
 #endif
-    CoInitialize(NULL);
+    // CoInitialize(NULL);
     if (!initialise()) {
         std::cerr << "Failed to initialize calendar." << std::endl;
         std::exit(10);
@@ -15,7 +15,7 @@ MCalendar::~MCalendar() {
     pNamespace->Logoff();
     pNamespace.Release();
     pOutlook.Release();
-    CoUninitialize();
+    // CoUninitialize();
 }
 
 // convert _bstr_t to std::string
