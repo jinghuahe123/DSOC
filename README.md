@@ -27,4 +27,18 @@ Due to offline support, Classic Microsoft Outlook is required for this applicati
 
 This is usually pre-installed alongside the Microsoft Office Suite. If this is not included on your device, please download it from [here](https://support.microsoft.com/en-gb/office/install-or-reinstall-classic-outlook-on-a-windows-pc-5c94902b-31a5-4274-abb0-b07f4661edf5).
 
+## Usage
+
+On the first run, DSOC will generate a configuration file called 'DSOC-config.json'. Fill out the fields and run the program again.
+
+| Parameter                         | Description                                                          |
+| --------------------------------- | -------------------------------------------------------------------- |
+| device_name                       | Unique ID for each computer                                          |
+| enable_automatic_optimisations    | Toggles the automatic event groupings.                               |
+| update_time                       | How long (seconds) between updating the event cache from Outlook.    |
+| reminder_time                     | How long before an event starts to send a reminder.                  |
+
+
+
+
 More documentation will be added accordingly as the project progresses. 
