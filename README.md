@@ -31,12 +31,12 @@ This is usually pre-installed alongside the Microsoft Office Suite. If this is n
 
 On the first run, DSOC will generate a configuration file called 'DSOC-config.json'. Fill out the fields and run the program again.
 
-| Parameter                         | Description                                                          |
-| --------------------------------- | -------------------------------------------------------------------- |
-| device_name                       | Unique ID for each computer                                          |
-| enable_automatic_optimisations    | Toggles the automatic event groupings.                               |
-| update_time                       | How long (seconds) between updating the event cache from Outlook.    |
-| reminder_time                     | How long before an event starts to send a reminder.                  |
+| Parameter                         | Description                                                             |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| device_name                       | Unique ID for each computer                                             |
+| enable_automatic_optimisations    | Toggles the automatic event groupings.                                  |
+| update_time                       | How long (seconds) between updating the event cache from Outlook.       |
+| reminder_time                     | How long (seconds) before an event starts to send a reminder.           |
 
 
 
