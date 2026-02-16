@@ -18,7 +18,8 @@ NotificationHandler::NotificationHandler(const std::wstring& appId, const std::w
     executablePath = exePath;
 
     // initialise the windows notification api
-	winrt::init_apartment();
+	//winrt::init_apartment();
+    winrt::init_apartment(winrt::apartment_type::multi_threaded);
 	SetCurrentProcessExplicitAppUserModelID(APP_ID.c_str()); // is this required if registry is set?
 
     // checks if notification api has been registered already (initialisation per application not per thread)

@@ -10,7 +10,12 @@
 
 #include "MCalendar.h"
 #include "ParameterHandler.h"
+#include "EventLogger.h"
 #include "NotificationHandler.h"
+// #include "UIWindow.h"
+
+
+// #include <MddBootstrap.h>
 
 
 /*
@@ -130,11 +135,11 @@ std::string getTarget(std::string description) {
 }
 
 // helper for formatting local events into log file format
-std::vector<ParameterHandler::CalendarEvent> formatEventsToLogfile(std::vector<CalendarEvent> events) {
-    std::vector<ParameterHandler::CalendarEvent> logEvents;
+std::vector<EventLogger::CalendarEvent> formatEventsToLogfile(std::vector<CalendarEvent> events) {
+    std::vector<EventLogger::CalendarEvent> logEvents;
 
     for (CalendarEvent event : events) {
-        ParameterHandler::CalendarEvent logEvent;
+        EventLogger::CalendarEvent logEvent;
         logEvent.title = event.title;
         logEvent.startHour = event.startHour;
         logEvent.startMinute = event.startMinute;
@@ -154,10 +159,10 @@ std::vector<ParameterHandler::CalendarEvent> formatEventsToLogfile(std::vector<C
 }
 
 // helper for formatting log file events into local events format
-std::vector<CalendarEvent> formatLogFileToEvents(std::vector<ParameterHandler::CalendarEvent> events) {
+std::vector<CalendarEvent> formatLogFileToEvents(std::vector<EventLogger::CalendarEvent> events) {
     std::vector<CalendarEvent> logEvents;
 
-    for (ParameterHandler::CalendarEvent event : events) {
+    for (EventLogger::CalendarEvent event : events) {
         CalendarEvent logEvent;
         logEvent.title = event.title;
         logEvent.startHour = event.startHour;
@@ -224,7 +229,7 @@ comparedEvents latestEvents; // global variable for struct of new and old events
 std::mutex latestEventsMutex;
 
 std::atomic<bool> checkEventsRunning = true;
-void checkEventsThread(ParameterHandler &myParams, NotificationHandler &notifications, ParameterHandler::ParameterData &data) {
+void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications, ParameterHandler::ParameterData &data) {
     // initialise calendar in thread
     // rquires initilisation of instance and also object separately - outlook instance is thread-specific
     CoInitialize(NULL);
@@ -253,7 +258,7 @@ void checkEventsThread(ParameterHandler &myParams, NotificationHandler &notifica
             }
 
             // read old events from data file
-            std::vector<CalendarEvent> previousEvents = formatLogFileToEvents(myParams.readEvents());
+            std::vector<CalendarEvent> previousEvents = formatLogFileToEvents(myEvents.readEvents());
 
             // merge notified flag into new events so that it persists every cycle rather than being overwritten
             // CHANGE THIS TO USE UNORDRERED SET? HOW MUCH MORE EFFICIENT?
@@ -267,8 +272,8 @@ void checkEventsThread(ParameterHandler &myParams, NotificationHandler &notifica
             }
 
             // save new events to data file
-            std::vector<ParameterHandler::CalendarEvent> logEvents = formatEventsToLogfile(relevantEvents);
-            myParams.writeEvents(logEvents);
+            std::vector<EventLogger::CalendarEvent> logEvents = formatEventsToLogfile(relevantEvents);
+            myEvents.writeEvents(logEvents);
 
             // create struct for easy return
             comparedEvents comparedevents;
@@ -309,7 +314,7 @@ void checkEventsThread(ParameterHandler &myParams, NotificationHandler &notifica
 
 
 std::atomic<bool> upcomingEventRunning = true;
-void notifyUpcomingEventThread(ParameterHandler &myParams, NotificationHandler& notifications, ParameterHandler::ParameterData& data) {
+void notifyUpcomingEventThread(EventLogger &myEvents, NotificationHandler& notifications, ParameterHandler::ParameterData& data) {
 
     using namespace std::chrono;
 
@@ -337,8 +342,8 @@ void notifyUpcomingEventThread(ParameterHandler &myParams, NotificationHandler& 
                 if (!event.notified && targetTime - now <= seconds(data.reminderTime)) {
                     notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
                     event.notified = true;
-                    std::vector<ParameterHandler::CalendarEvent> logEvents = formatEventsToLogfile(latestEvents.duplicateEvents);
-                    myParams.writeEvents(logEvents);
+                    std::vector<EventLogger::CalendarEvent> logEvents = formatEventsToLogfile(latestEvents.duplicateEvents);
+                    myEvents.writeEvents(logEvents);
                     // std::cout << "OLD EVENTS NOTIFYING" << std::endl;
                 }
             }
@@ -357,32 +362,36 @@ int main() {
     std::cerr << "Does not support current operating system. Please run on Windows." << std::endl;
 #endif
 
+    // careful is blocking
+    //UIWindow ui;
+    //ui.Run();
+
+
     // set program basic parameters
     const std::string file_name = "DSOC-config.json"; // user config file filename
     const std::string data_file_name = "DSOC-data.data"; // program events data filename
     const std::wstring appID = L"DeviceSpecificMicrosoftCalendar"; // program id required for notifications
     const std::wstring exePath = NotificationHandler::getExecutablePath(); // program executable path to pass to notificationhandler
     const std::wstring shortcutPath = std::wstring(_wgetenv(L"APPDATA")) + L"\\Microsoft\\Windows\\Start Menu\\Programs\\" + std::filesystem::path(exePath).stem().wstring() + L".lnk"; // path to place link to program (req. for notifications)
-
-    //std::wcout << exePath << std::endl;
-    //std::wcout << shortcutPath << std::endl;
     
-    ParameterHandler myParams(file_name, data_file_name); // initialise the json/log file service
+    // initialise classes
+    ParameterHandler myParams(file_name); // initialise the json parameter service
     ParameterHandler::ParameterData data = myParams.getData(); // get program settings from log file
+    EventLogger myEvents(data_file_name); // initialise the json event logging service
     NotificationHandler notifications(appID, shortcutPath, exePath); // initialise the notification service
 
 
 
     // start the thread that constantly checks for new events
     std::thread checkEventsWorker(checkEventsThread,
-        std::ref(myParams),
+        std::ref(myEvents),
         std::ref(notifications),
         std::ref(data)
     );
 
     // start the thread that will show events when they arrive
     std::thread notifyUpcomingEventWorker(notifyUpcomingEventThread,
-        std::ref(myParams),
+        std::ref(myEvents),
         std::ref(notifications),
         std::ref(data)
     );
@@ -395,7 +404,7 @@ int main() {
 
     // std::cout << data.currentDevice << std::endl;
 
-    
+
 
     while(1) {
         { // new context specifically for mutex lock

@@ -8,9 +8,9 @@
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
-  <component name="CMakePresetLoader"><![CDATA[{
-  "useNewFormat": true
-}]]></component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
   <component name="CMakeProjectFlavorService">
     <option name="flavorId" value="CMakePlainProjectFlavor" />
   </component>
@@ -26,7 +26,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b4e2d01d-c4b1-4e5d-85b7-4eb297e04e8a" name="Changes" comment="" />
+    <list default="true" id="b4e2d01d-c4b1-4e5d-85b7-4eb297e04e8a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/DSOC/DSOC.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/DSOC.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DSOC/DSOC.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/DSOC.vcxproj.filters" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DSOC/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/Main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DSOC/NotificationHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/NotificationHandler.cpp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -41,10 +46,10 @@
     <option name="minorVersion" value="2.4" />
     <option name="productBranch" value="Classic" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="37tZo2zWqIQJ6cF0IDNIjyhUu5E" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -57,19 +62,13 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "RunOnceActivity.west.config.association.type.startup.service": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="b4e2d01d-c4b1-4e5d-85b7-4eb297e04e8a" name="Changes" comment="" />
@@ -78,6 +77,7 @@
       <option name="presentableId" value="Default" />
       <updated>1767724500328</updated>
       <workItem from="1767724502481" duration="15000" />
+      <workItem from="1771274978809" duration="2000" />
     </task>
     <servers />
   </component>
