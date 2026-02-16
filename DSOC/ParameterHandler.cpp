@@ -90,6 +90,7 @@ std::vector<ParameterHandler::CalendarEvent> ParameterHandler::readEvents() {
         event.endHour = value["endHour"];
         event.endMinute = value["endMinute"];
         event.description = value["description"];
+        event.notified = value["notified"];
 
         events.push_back(event);
     }

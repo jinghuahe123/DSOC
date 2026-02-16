@@ -25,6 +25,7 @@ public:
 		int endMinute;
 		std::string description;
 		std::string targetDevice;
+		bool notified = false;
 	};
 
 
@@ -41,6 +42,7 @@ public:
 			{"endMinute", event.endMinute},
 			{"target", event.targetDevice},
 			{"description", event.description},
+			{"notified", event.notified},
 		};
 	};
 
@@ -53,6 +55,7 @@ public:
 		j.at("endMinute").get_to(event.endMinute);
 		j.at("target").get_to(event.targetDevice);
 		j.at("description").get_to(event.description);
+		j.at("notified").get_to(event.notified);
 	};
 
 	// NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CalendarEvent, index, title, description, date)
@@ -73,8 +76,8 @@ private:
 		{"parameters", {
 			{"device_name", ""},
 			{"enable_automatic_optimisations", true},
-			{"update_time", 300}, // 5*60 seconds; 5mins
-			{"reminder_time", 600}, // 10*60 seconds; 10mins
+			{"update_time", 15}, // 15 seconds - how often the thread to get new events should update
+			{"reminder_time", 600}, // 10*60 seconds; 10mins - how long before an event a notification should occur
 		}}
 	};
 	json loaded_params;
