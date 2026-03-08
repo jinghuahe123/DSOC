@@ -37,6 +37,10 @@ On the first run, DSOC will generate a configuration file called 'DSOC-config.js
 | enable_automatic_optimisations    | Toggles the automatic event groupings.                                  |
 | update_time                       | Time (seconds) between updating the event cache from Outlook.           |
 | reminder_time                     | Time (seconds) before an event starts to send a reminder.               |
+| start_hour                        | (24hr) Hour that the program will begin filtering events.               |
+| start_minute                      | Minute that the program will begin filtering events.                    |
+| end_hour                          | (24hr) Hour that the program will stop filtering events.                |
+| end_minute                        | Minute that the program will stop filtering events.                     |
 
 If automatic optimisations are enabled, DSOC will then also generate a file called 'optimisations.json'. Fill out the fields, and copy paste the existing format if more fields are required.
 
