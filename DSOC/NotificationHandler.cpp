@@ -72,7 +72,7 @@ bool NotificationHandler::registerAppID() {
 }
 
 bool NotificationHandler::createAppIDShortcut() {
-    CoInitialize(nullptr);
+    //CoInitialize(nullptr);
 
     // hresult is written to when an operation success/failure is logged
     // shellLink is written to to configure the shorcut itself
@@ -109,7 +109,7 @@ bool NotificationHandler::createAppIDShortcut() {
     persistFile->Release();
     propStore->Release();
     shellLink->Release();
-    CoUninitialize();
+    //CoUninitialize();
 
     appInitialised = true;
 

@@ -121,7 +121,7 @@
       <AdditionalIncludeDirectories>$(GeneratedFilesDir);$(GeneratedFilesDir)\winrt;$(WindowsSDK_IncludePath);D:\projects\libraries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>

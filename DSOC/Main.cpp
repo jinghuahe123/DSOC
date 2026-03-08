@@ -13,7 +13,6 @@
 #include "EventLogger.h"
 #include "NotificationHandler.h"
 #include "OptimisationHandler.h"
-// #include "UIWindow.h"
 
 
 /*
@@ -26,12 +25,6 @@
         better return carriage detection for getTarget
         better sendto: detection
 */
-
-// allowing a certain keyword to automatically put a notification somewhere?
-// categorisation keywords / analyse description to optimise for certain function
-
-// set up user settable categories similar to outlook calendar categorise
-// set up broker to allow outlook calendar categorisation fields to automatically put a notificaion to a certain device?
 
 
 // main struct for storing each calendar event
@@ -144,7 +137,9 @@ std::string getTarget(std::string& description) {
 
 std::string getContentsAfterTarget(std::string& description) {
     std::string modified_description;
+
     size_t position = description.find_first_of("\r\n");
+
     // no new line found, return the whole string
     if (position == std::string::npos) {
         modified_description = description;
@@ -299,93 +294,98 @@ std::atomic<bool> checkEventsRunning = true;
 void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications, ParameterHandler::ParameterData &data, std::vector<OptimisationHandler::OptimisationData> relevantOptimsationData) {
     // initialise calendar in thread
     // rquires initilisation of instance and also object separately - outlook instance is thread-specific
+
     CoInitialize(NULL);
-    MCalendar myCalendar;
 
-    using namespace std::chrono;
+    { // proper scope for MCalendar to exit cleanly.
+        MCalendar myCalendar;
 
-    auto lastRun = steady_clock::now() - seconds(data.updateTime); // force update on furst run
+        using namespace std::chrono;
 
-    while (checkEventsRunning) {
+        auto lastRun = steady_clock::now() - seconds(data.updateTime); // force update on furst run
 
-        auto now = steady_clock::now();
+        while (checkEventsRunning) {
 
-        if (now - lastRun >= seconds(data.updateTime) && withinSetTimeFrame(data)) { // if more time has passed than json file parameter specifies && is within times set in parameters
+            auto now = steady_clock::now();
 
-            // get calendar events and parse for relevant events for the current device
-            std::vector<CalendarEvent> events = getEvents(myCalendar);
-            std::vector<CalendarEvent> relevantEvents;
-            if (!events.empty()) {
-                for (CalendarEvent& event : events) {
-                    event.targetDevice = getTarget(event.description);
+            if (now - lastRun >= seconds(data.updateTime) && withinSetTimeFrame(data)) { // if more time has passed than json file parameter specifies && is within times set in parameters
 
-                    bool descriptionContainsKeyword = false; // flag if event description contains one of the keywords in the optimisation
-                    bool titleContainsKeyword = false; // flag if the title contains one of the keywords in the optimisation
-                    for (const auto& keywordData : relevantOptimsationData) {
-                        if (event.description.find(keywordData.keyword) != std::string::npos) {
-                            descriptionContainsKeyword = true;
-                            break; // faster - if one keyword found, set flag and skip all the others
+                // get calendar events and parse for relevant events for the current device
+                std::vector<CalendarEvent> events = getEvents(myCalendar);
+                std::vector<CalendarEvent> relevantEvents;
+                if (!events.empty()) {
+                    for (CalendarEvent& event : events) {
+                        event.targetDevice = getTarget(event.description);
+
+                        bool descriptionContainsKeyword = false; // flag if event description contains one of the keywords in the optimisation
+                        bool titleContainsKeyword = false; // flag if the title contains one of the keywords in the optimisation
+                        for (const auto& keywordData : relevantOptimsationData) {
+                            if (event.description.find(keywordData.keyword) != std::string::npos) {
+                                descriptionContainsKeyword = true;
+                                break; // faster - if one keyword found, set flag and skip all the others
+                            }
+                            if (event.title.find(keywordData.keyword) != std::string::npos) {
+                                titleContainsKeyword = true;
+                                break;
+                            }
                         }
-                        if (event.title.find(keywordData.keyword) != std::string::npos) {
-                            titleContainsKeyword = true;
+
+                        if (event.targetDevice == data.currentDevice || descriptionContainsKeyword || titleContainsKeyword) { // does it require checking date as well as time, or does following logfile write handle that already?
+                            relevantEvents.push_back(event);
+                        }
+                    }
+                }
+
+                // read old events from data file
+                std::vector<CalendarEvent> previousEvents = formatLogFileToEvents(myEvents.readEvents());
+
+                // merge notified flag into new events so that it persists every cycle rather than being overwritten
+                // CHANGE THIS TO USE UNORDRERED SET? HOW MUCH MORE EFFICIENT?
+                for (auto& newEvent : relevantEvents) {
+                    for (const auto& oldEvent : previousEvents) {
+                        if (newEvent == oldEvent) {
+                            newEvent.notified = oldEvent.notified;
                             break;
                         }
                     }
+                }
 
-                    if (event.targetDevice == data.currentDevice || descriptionContainsKeyword || titleContainsKeyword) { // does it require checking date as well as time, or does following logfile write handle that already?
-                        relevantEvents.push_back(event);
+                // save new events to data file
+                std::vector<EventLogger::CalendarEvent> logEvents = formatEventsToLogfile(relevantEvents);
+                myEvents.writeEvents(logEvents);
+
+                // create struct for easy return
+                comparedEvents comparedevents;
+
+                // parse for newly added events since last update
+                compareCalendarEvents(relevantEvents, previousEvents, comparedevents.duplicateEvents, comparedevents.uniqueNewEvents);
+
+
+                for (CalendarEvent& event : comparedevents.uniqueNewEvents) {
+                    // change string to wstring conversion to support chinese characters if time
+                    if (!event.notified) {
+                        std::string modified_description = getContentsAfterTarget(event.description);
+
+                        //notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
+                        notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()));
+                        // std::cout << "NEW EVENT NOTIFYING" << std::endl;
+                        // more logic to display notification as an upcoming event rather than event about to happen
                     }
                 }
-            }
 
-            // read old events from data file
-            std::vector<CalendarEvent> previousEvents = formatLogFileToEvents(myEvents.readEvents());
-
-            // merge notified flag into new events so that it persists every cycle rather than being overwritten
-            // CHANGE THIS TO USE UNORDRERED SET? HOW MUCH MORE EFFICIENT?
-            for (auto& newEvent : relevantEvents) {
-                for (const auto& oldEvent : previousEvents) {
-                    if (newEvent == oldEvent) {
-                        newEvent.notified = oldEvent.notified;
-                        break;
-                    }
-                }
-            }
-
-            // save new events to data file
-            std::vector<EventLogger::CalendarEvent> logEvents = formatEventsToLogfile(relevantEvents);
-            myEvents.writeEvents(logEvents);
-
-            // create struct for easy return
-            comparedEvents comparedevents;
-
-            // parse for newly added events since last update
-            compareCalendarEvents(relevantEvents, previousEvents, comparedevents.duplicateEvents, comparedevents.uniqueNewEvents);
-
-
-            for (CalendarEvent& event : comparedevents.uniqueNewEvents) {
-                // change string to wstring conversion to support chinese characters if time
-                if (!event.notified) {
-                    std::string modified_description = getContentsAfterTarget(event.description);
-
-                    //notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
-                    notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()));
-                    // std::cout << "NEW EVENT NOTIFYING" << std::endl;
-                    // more logic to display notification as an upcoming event rather than event about to happen
-                }
-            }
-
-            { // new context for mutex lock
-                std::lock_guard<std::mutex> lock(latestEventsMutex);
-                latestEvents = comparedevents; // result;
-            } // end mutex lock
+                { // new context for mutex lock
+                    std::lock_guard<std::mutex> lock(latestEventsMutex);
+                    latestEvents = comparedevents; // result;
+                } // end mutex lock
             
-            lastRun = now; // update last run timer for loop
-        }
+                lastRun = now; // update last run timer for loop
+            }
 
-        // slight delay for stability
-        // how many ms should this be? - req. balance speed and cpu usage
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            // slight delay for stability
+            // how many ms should this be? - req. balance speed and cpu usage
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        }
 
     }
 
@@ -444,68 +444,16 @@ void notifyUpcomingEventThread(EventLogger &myEvents, NotificationHandler& notif
 
 
 
+std::atomic<bool> consoleAppRunning = true;
+void consoleApp() {
+    // spawn a console window
+    AllocConsole();
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONIN$", "r", stdin);
 
-int main() {
-#ifndef _WIN32
-    std::cerr << "Does not support current operating system. Please run on Windows." << std::endl;
-#endif
-
-    // set program basic parameters
-    const std::string file_name = "DSOC-config.json"; // user config file filename
-    const std::string data_file_name = "DSOC-data.data"; // program events data filename
-    const std::string optimisation_file_name = "optimisations.json"; // optimisation data filename
-    const std::wstring appID = L"DeviceSpecificMicrosoftCalendar"; // program id required for notifications
-    const std::wstring exePath = NotificationHandler::getExecutablePath(); // program executable path to pass to notificationhandler
-    const std::wstring shortcutPath = std::wstring(_wgetenv(L"APPDATA")) + L"\\Microsoft\\Windows\\Start Menu\\Programs\\" + std::filesystem::path(exePath).stem().wstring() + L".lnk"; // path to place link to program (req. for notifications)
-    
-    // initialise classes
-    ParameterHandler myParams(file_name); // initialise the json parameter service
-    ParameterHandler::ParameterData data = myParams.getData(); // get program settings from log file
-    EventLogger myEvents(data_file_name); // initialise the json event logging service
-    OptimisationHandler optimisations(optimisation_file_name); // create optimisation class
-    std::vector<OptimisationHandler::OptimisationData> optimisationData; // all keyword optimisation vector
-    std::vector<OptimisationHandler::OptimisationData> relevantOptimisationData; // keyword optimisations for the current device
-    NotificationHandler notifications(appID, shortcutPath, exePath); // initialise the notification service
-
-    if (data.enableAutomaticOptimisations) {
-        optimisations.init(); // initialise optimisation class 
-
-        // get optimisations, and filter for relevant ones for the current device
-        optimisationData = optimisations.readOptimisationData();
-        for (auto opt : optimisationData) {
-            if (opt.targetDevice == data.currentDevice) {
-                relevantOptimisationData.push_back(opt);
-            }
-        }
-    }
-
-    // start the thread that constantly checks for new events
-    std::thread checkEventsWorker(checkEventsThread,
-        std::ref(myEvents),
-        std::ref(notifications),
-        std::ref(data),
-        std::ref(relevantOptimisationData)
-    );
-
-    // start the thread that will show events when they arrive
-    std::thread notifyUpcomingEventWorker(notifyUpcomingEventThread,
-        std::ref(myEvents),
-        std::ref(notifications),
-        std::ref(data)
-    );
-
-
-
-    // requried so first display of events is not null
     std::cout << "Waiting for Outlook Calendar to start..." << std::endl << std::endl;
-    notifications.sendNotification(L"Welcome to DSOC. ", L"DSOC is running in the background.");
-    std::this_thread::sleep_for(std::chrono::seconds(2)); 
 
-    // std::cout << data.currentDevice << std::endl;
-
-
-
-    while(1) {
+    while (consoleAppRunning) {
         { // new context specifically for mutex lock
             std::lock_guard<std::mutex> lock(latestEventsMutex); // lock the context for safe data accessing
 
@@ -522,13 +470,105 @@ int main() {
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
+    // get rid of console
+    FreeConsole();
+}
 
 
-    // stop all threads before exiting
+// main() loop is replaced with this as no console window is spawned automatically
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+//int main() {
+#ifndef _WIN32
+    std::cerr << "Does not support current operating system. Please run on Windows." << std::endl;
+#endif
+
+    // set program basic parameters
+    const std::string file_name = "DSOC-config.json"; // user config file filename
+    const std::string data_file_name = "DSOC-data.data"; // program events data filename
+    const std::string optimisation_file_name = "optimisations.json"; // optimisation data filename
+    const std::wstring appID = L"DeviceSpecificMicrosoftCalendar"; // program id required for notifications
+    const std::wstring exePath = NotificationHandler::getExecutablePath(); // program executable path to pass to notificationhandler
+    const std::wstring shortcutPath = std::wstring(_wgetenv(L"APPDATA")) + L"\\Microsoft\\Windows\\Start Menu\\Programs\\" + std::filesystem::path(exePath).stem().wstring() + L".lnk"; // path to place link to program (req. for notifications)
+    
+    // initialise classes
+    ParameterHandler myParams(file_name); // initialise the json parameter service
+    ParameterHandler::ParameterData data = myParams.getData(); // get program settings from log file
+
+    // start thread that will spawn a console
+    // requires to be here before all other classes are initialised as they will print error messages to this console window
+    std::thread consoleAppWorker;
+    if (data.consoleEnabled && !consoleAppWorker.joinable()) {
+        consoleAppWorker = std::thread(consoleApp);
+    }
+
+    EventLogger myEvents(data_file_name); // initialise the json event logging service
+    OptimisationHandler optimisations(optimisation_file_name); // create optimisation class
+    std::vector<OptimisationHandler::OptimisationData> optimisationData; // all keyword optimisation vector
+    std::vector<OptimisationHandler::OptimisationData> relevantOptimisationData; // keyword optimisations for the current device
+    NotificationHandler notifications(appID, shortcutPath, exePath); // initialise the notification service
+
+    if (data.enableAutomaticOptimisations) {
+        optimisations.init(); // initialise optimisation class 
+
+        // get optimisations, and filter for relevant ones for the current device
+        optimisationData = optimisations.readOptimisationData();
+        for (auto opt : optimisationData) {
+            if (opt.targetDevice == data.currentDevice) {
+                relevantOptimisationData.push_back(opt);
+            }
+        }
+    }    
+    
+    // start the thread that constantly checks for new events
+    std::thread checkEventsWorker(checkEventsThread,
+        std::ref(myEvents),
+        std::ref(notifications),
+        std::ref(data),
+        std::ref(relevantOptimisationData)
+    );
+
+    // start the thread that will show events when they arrive
+    std::thread notifyUpcomingEventWorker(notifyUpcomingEventThread,
+        std::ref(myEvents),
+        std::ref(notifications),
+        std::ref(data)
+    );
+
+    
+
+    // requried so first display of events is not null
+    notifications.sendNotification(L"Welcome to DSOC. ", L"DSOC is running in the background.");
+    std::this_thread::sleep_for(std::chrono::seconds(2)); 
+
+    // std::cout << data.currentDevice << std::endl;
+
+    // add a hotkey (Ctrl+Shift+Q) that is used to trigger program quit
+    RegisterHotKey(NULL, 1, MOD_CONTROL | MOD_SHIFT, 'Q');
+
+    // windows programs run on message-based systems
+    // this creates a message object that will recieve a message when the hotkey is pressed
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) { // loop that constantly gets any upcoming messages
+        // checks if the message is the hotkey set before
+        if (msg.message == WM_HOTKEY && msg.wParam == 1) {
+            notifications.sendNotification(L"Program Exiting...", L"Ctrl+Shift+Q Pressed");
+
+            break; // when quit message is recieved, immediately break out of the loop
+        }
+    }
+
+    UnregisterHotKey(NULL, 1); // delets the registered hotkey created previously (cleanup)
+
+    // stop all threads before exiting (cleanup)
     checkEventsRunning = false;
     upcomingEventRunning = false;
     checkEventsWorker.join();
     notifyUpcomingEventWorker.join();
+
+    if (data.consoleEnabled && consoleAppWorker.joinable()) {
+        consoleAppRunning = false;
+        consoleAppWorker.join();
+    }
 
     return 0;
 }
