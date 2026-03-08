@@ -120,7 +120,7 @@ std::vector<CalendarEvent> getEvents(MCalendar& object) {
 } 
 
 // returns target computer (if set) from event description
-std::string getTarget(std::string description) {
+std::string getTarget(std::string& description) {
     std::string target;
 
     // carriage return detection - see format for device specifity
@@ -140,6 +140,28 @@ std::string getTarget(std::string description) {
     }
 
     return "";
+}
+
+std::string getContentsAfterTarget(std::string& description) {
+    std::string modified_description;
+    size_t position = description.find_first_of("\r\n");
+    // no new line found, return the whole string
+    if (position == std::string::npos) {
+        modified_description = description;
+    }
+    else { // find first character after that new line
+        size_t startPosition = description.find_first_not_of("\r\n", position);
+
+        // if newline is at the end, and nothing comes after it
+        if (startPosition == std::string::npos) {
+            modified_description = "";
+        }
+        else { // return everything after newline
+            modified_description = description.substr(startPosition);
+        }
+    }
+
+    return modified_description;
 }
 
 // helper for formatting local events into log file format
@@ -344,7 +366,10 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
             for (CalendarEvent& event : comparedevents.uniqueNewEvents) {
                 // change string to wstring conversion to support chinese characters if time
                 if (!event.notified) {
-                    notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
+                    std::string modified_description = getContentsAfterTarget(event.description);
+
+                    //notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
+                    notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()));
                     // std::cout << "NEW EVENT NOTIFYING" << std::endl;
                     // more logic to display notification as an upcoming event rather than event about to happen
                 }
@@ -354,7 +379,7 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
                 std::lock_guard<std::mutex> lock(latestEventsMutex);
                 latestEvents = comparedevents; // result;
             } // end mutex lock
-
+            
             lastRun = now; // update last run timer for loop
         }
 
@@ -399,7 +424,11 @@ void notifyUpcomingEventThread(EventLogger &myEvents, NotificationHandler& notif
                 auto targetTime = system_clock::from_time_t(std::mktime(&event_time));
 
                 if (!event.notified && targetTime - now <= seconds(data.reminderTime)) {
-                    notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
+                    // get rid of the SENDTO header if it exists
+                    std::string modified_description = getContentsAfterTarget(event.description);
+
+                    //notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
+                    notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()));
                     event.notified = true;
                     std::vector<EventLogger::CalendarEvent> logEvents = formatEventsToLogfile(latestEvents.duplicateEvents);
                     myEvents.writeEvents(logEvents);
@@ -469,6 +498,7 @@ int main() {
 
     // requried so first display of events is not null
     std::cout << "Waiting for Outlook Calendar to start..." << std::endl << std::endl;
+    notifications.sendNotification(L"Welcome to DSOC. ", L"DSOC is running in the background.");
     std::this_thread::sleep_for(std::chrono::seconds(2)); 
 
     // std::cout << data.currentDevice << std::endl;
