@@ -13,6 +13,10 @@ public:
 		bool enableAutomaticOptimisations;
 		unsigned long updateTime;
 		unsigned long reminderTime;
+		int startHour;
+		int startMinute;
+		int endHour;
+		int endMinute;
 	};
 
 
@@ -33,6 +37,10 @@ private:
 			{"enable_automatic_optimisations", true},
 			{"update_time", 15}, // 15 seconds - how often the thread to get new events should update
 			{"reminder_time", 600}, // 10*60 seconds; 10mins - how long before an event a notification should occur
+			{"start_hour", 0},
+			{"start_minute", 0},
+			{"end_hour", 0},
+			{"end_minute", 0}
 		}}
 	};
 	json loaded_params;

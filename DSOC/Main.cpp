@@ -187,6 +187,43 @@ std::vector<CalendarEvent> formatLogFileToEvents(std::vector<EventLogger::Calend
     return logEvents;
 }
 
+bool withinSetTimeFrame(ParameterHandler::ParameterData& data) {
+    // if not set, always return true
+    if (data.startHour == 0 && data.startMinute == 0 && data.endHour == 0 && data.endMinute == 0) {
+        return true;
+    }
+
+    // current time
+    auto now = std::chrono::system_clock::now();
+
+    // create a copy in the format of std::tm
+    // otherwise when intialising, std::tm gives garbage non-set values
+    std::time_t now_copy = std::chrono::system_clock::to_time_t(now);
+    std::tm today;
+    localtime_s(&today, &now_copy);
+
+    // doesn't always work if spans multiple hours
+    /*
+    if (today.tm_hour >= data.startHour && today.tm_hour <= data.endHour) {
+        if (today.tm_min >= data.startMinute && today.tm_min <= data.endMinute) {
+            return true;
+        }
+    }
+    else {
+        return false;
+    }*/
+
+    // convert everything to minutes past midnight for robust time conversion
+    int nowMinutes = today.tm_hour * 60 + today.tm_min;
+    int startMinutes = data.startHour * 60 + data.startMinute;
+    int endMinutes = data.endHour * 60 + data.endMinute;
+
+    // if current time is more minutes passed than start, and less minutes passed than end
+    bool betweenTimeFrames = nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+
+    return betweenTimeFrames;
+}
+
 // debugging use
 // displays to console details of a vector of events
 void displayEvents(std::vector<CalendarEvent> events) { 
@@ -248,9 +285,10 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
     auto lastRun = steady_clock::now() - seconds(data.updateTime); // force update on furst run
 
     while (checkEventsRunning) {
+
         auto now = steady_clock::now();
 
-        if (now - lastRun >= seconds(data.updateTime)) { // if more time has passed than json file parameter specifies
+        if (now - lastRun >= seconds(data.updateTime) && withinSetTimeFrame(data)) { // if more time has passed than json file parameter specifies && is within times set in parameters
 
             // get calendar events and parse for relevant events for the current device
             std::vector<CalendarEvent> events = getEvents(myCalendar);
@@ -382,11 +420,6 @@ int main() {
 #ifndef _WIN32
     std::cerr << "Does not support current operating system. Please run on Windows." << std::endl;
 #endif
-
-    // careful is blocking
-    //UIWindow ui;
-    //ui.Run();
-
 
     // set program basic parameters
     const std::string file_name = "DSOC-config.json"; // user config file filename

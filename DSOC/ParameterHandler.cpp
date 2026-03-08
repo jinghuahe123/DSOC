@@ -37,6 +37,10 @@ ParameterHandler::ParameterData ParameterHandler::getData() {
         data.enableAutomaticOptimisations = loaded_params["parameters"]["enable_automatic_optimisations"] != 0;
         data.updateTime = loaded_params["parameters"]["update_time"];
         data.reminderTime = loaded_params["parameters"]["reminder_time"];
+        data.startHour = loaded_params["parameters"]["start_hour"];
+        data.startMinute = loaded_params["parameters"]["start_minute"];
+        data.endHour = loaded_params["parameters"]["end_hour"];
+        data.endMinute = loaded_params["parameters"]["end_minute"];
 
     } catch (const json::exception& e) {
         std::cerr << "JSON parsing error: " << e.what() << std::endl;

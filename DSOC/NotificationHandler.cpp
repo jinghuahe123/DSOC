@@ -122,6 +122,7 @@ void NotificationHandler::sendNotification(const std::wstring& title, const std:
 	using namespace winrt::Windows::Data::Xml::Dom;
 
 	// notification in xml format
+    // could turn this into a separate document, but don't want a random .xml file floating around, accessable to the user?
 	std::wstring xmlPayload = LR"(<toast> <visual> <binding template="ToastGeneric"> <text>)" + title + LR"(</text> <text>)" + message + LR"(</text> </binding> </visual> </toast>)";
 
 	// parse as xml
