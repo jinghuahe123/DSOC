@@ -1,0 +1,10 @@
+{
+    "0": {
+        "keyword": "testDevice1",
+        "target": "TEST-PC"
+    },
+    "1": {
+        "keyword": "testDevice2",
+        "target": "keyword2"
+    }
+}

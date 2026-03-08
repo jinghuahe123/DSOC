@@ -27,10 +27,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b4e2d01d-c4b1-4e5d-85b7-4eb297e04e8a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/DSOC/DSOC.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/DSOC.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSOC/DSOC.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/DSOC.vcxproj.filters" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/DSOC.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DSOC.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DSOC/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/Main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DSOC/NotificationHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/DSOC/NotificationHandler.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +39,21 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;jinghuahe123&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/jinghuahe123/DSOC&quot;,
+    &quot;accountId&quot;: &quot;7fc62168-721a-4d67-81c7-90a5d653976d&quot;
+  }
+}</component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
     <option name="majorVersion" value="2025" />
@@ -61,14 +75,28 @@
     "RunOnceActivity.RadMigrateCodeStyle": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "RunOnceActivity.west.config.association.type.startup.service": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="b4e2d01d-c4b1-4e5d-85b7-4eb297e04e8a" name="Changes" comment="" />
@@ -78,6 +106,7 @@
       <updated>1767724500328</updated>
       <workItem from="1767724502481" duration="15000" />
       <workItem from="1771274978809" duration="2000" />
+      <workItem from="1772138826459" duration="601000" />
     </task>
     <servers />
   </component>

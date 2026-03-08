@@ -12,23 +12,19 @@
 #include "ParameterHandler.h"
 #include "EventLogger.h"
 #include "NotificationHandler.h"
+#include "OptimisationHandler.h"
 // #include "UIWindow.h"
-
-
-// #include <MddBootstrap.h>
 
 
 /*
     Format for device specificty:
-    SENDTO: <device name> \r\n<Content of reminder>
+    SENDTO: <device name> \r\n <Content of reminder>
 
 
     TODO:
         change every instance of push_back to emplace_back?
         better return carriage detection for getTarget
         better sendto: detection
-        fix copy of data inefficiency
-        remove SYSTEMTIME dependency entirely? - incompatible with nlohmann/json (pure integer hour/minute)
 */
 
 // allowing a certain keyword to automatically put a notification somewhere?
@@ -49,7 +45,8 @@ struct CalendarEvent {
     std::string targetDevice;
     bool notified = false;
 
-    // used in comparing if event is new or old
+    // used in confirming if an event is duplicate or not
+    // multiple events can be assigned the same bucket (a collision)
     bool operator==(const auto& events) const {
         return title == events.title &&
             startHour == events.startHour &&
@@ -61,6 +58,9 @@ struct CalendarEvent {
     }
 };
 
+// this is used to create efficient lookups of events when there are large number of events (maintains relative O(1) time)
+// allows unordered_set to build a bucket list of events where each bucket can be jumped to directly rather than scanning through all the events manually
+// it acts like a 'functor', i.e. a struct that can act as a function since it overloads the () operator
 struct CalendarEventHash { // dont hash index, order of events may change
     std::size_t operator()(const CalendarEvent& event) const {
         std::size_t hTitle = std::hash<std::string>{}(event.title);
@@ -71,6 +71,8 @@ struct CalendarEventHash { // dont hash index, order of events may change
         std::size_t hDescription = std::hash<std::string>{}(event.description);
         std::size_t hTargetDevice = std::hash<std::string>{}(event.targetDevice);
 
+        // xor and bit shifts each hash to try avoid collisions and duplicate hashes
+        // keeps lookup closer to O(1) time
         return hTitle ^ (hStartHour << 1) ^ (hStartMinute << 2) ^ (hEndHour << 3) ^ (hEndMinute << 4) ^ (hDescription << 5) ^ (hTargetDevice << 6);
     }
 };
@@ -78,9 +80,15 @@ struct CalendarEventHash { // dont hash index, order of events may change
 // careful when using not to pass newEvents and oldEvents backwards
 // compares and returns what is different in new events from old
 void compareCalendarEvents(const std::vector<CalendarEvent>& newEvents, const std::vector<CalendarEvent>& oldEvents, std::vector<CalendarEvent>& duplicateEvents, std::vector<CalendarEvent>& uniqueNewEvents) {
+    // the syntax is CalendarEvent key type, and CalendarEventHash hash function
+    // for each event it will create a hash, and builds a bucket list of all the events based on the hash
+    // the bucket that an event goes to is calculated by 'hash of event' % 'number of buckets'
     std::unordered_set<CalendarEvent, CalendarEventHash> vecOldEventsSet(oldEvents.begin(), oldEvents.end());
 
     for (const auto& event : newEvents) {
+        // internally hashes the new event, and looks up the bucket that it should be going to for old events
+        // if the bucket contains events, operator== is used internally to confirm which event it corresponds to (if it does)
+        // if is the same as another event, puts the event into duplicateEvents, otherwise puts it into uniqueNewEvents
         if (vecOldEventsSet.find(event) != vecOldEventsSet.end()) {
             duplicateEvents.push_back(event);
         }
@@ -229,7 +237,7 @@ comparedEvents latestEvents; // global variable for struct of new and old events
 std::mutex latestEventsMutex;
 
 std::atomic<bool> checkEventsRunning = true;
-void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications, ParameterHandler::ParameterData &data) {
+void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications, ParameterHandler::ParameterData &data, std::vector<OptimisationHandler::OptimisationData> relevantOptimsationData) {
     // initialise calendar in thread
     // rquires initilisation of instance and also object separately - outlook instance is thread-specific
     CoInitialize(NULL);
@@ -251,7 +259,20 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
                 for (CalendarEvent& event : events) {
                     event.targetDevice = getTarget(event.description);
 
-                    if (event.targetDevice == data.currentDevice) { // does it require checking date as well as time, or does following logfile write handle that already?
+                    bool descriptionContainsKeyword = false; // flag if event description contains one of the keywords in the optimisation
+                    bool titleContainsKeyword = false; // flag if the title contains one of the keywords in the optimisation
+                    for (const auto& keywordData : relevantOptimsationData) {
+                        if (event.description.find(keywordData.keyword) != std::string::npos) {
+                            descriptionContainsKeyword = true;
+                            break; // faster - if one keyword found, set flag and skip all the others
+                        }
+                        if (event.title.find(keywordData.keyword) != std::string::npos) {
+                            titleContainsKeyword = true;
+                            break;
+                        }
+                    }
+
+                    if (event.targetDevice == data.currentDevice || descriptionContainsKeyword || titleContainsKeyword) { // does it require checking date as well as time, or does following logfile write handle that already?
                         relevantEvents.push_back(event);
                     }
                 }
@@ -296,7 +317,7 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
                 latestEvents = comparedevents; // result;
             } // end mutex lock
 
-            lastRun = now;
+            lastRun = now; // update last run timer for loop
         }
 
         // slight delay for stability
@@ -370,6 +391,7 @@ int main() {
     // set program basic parameters
     const std::string file_name = "DSOC-config.json"; // user config file filename
     const std::string data_file_name = "DSOC-data.data"; // program events data filename
+    const std::string optimisation_file_name = "optimisations.json"; // optimisation data filename
     const std::wstring appID = L"DeviceSpecificMicrosoftCalendar"; // program id required for notifications
     const std::wstring exePath = NotificationHandler::getExecutablePath(); // program executable path to pass to notificationhandler
     const std::wstring shortcutPath = std::wstring(_wgetenv(L"APPDATA")) + L"\\Microsoft\\Windows\\Start Menu\\Programs\\" + std::filesystem::path(exePath).stem().wstring() + L".lnk"; // path to place link to program (req. for notifications)
@@ -378,15 +400,29 @@ int main() {
     ParameterHandler myParams(file_name); // initialise the json parameter service
     ParameterHandler::ParameterData data = myParams.getData(); // get program settings from log file
     EventLogger myEvents(data_file_name); // initialise the json event logging service
+    OptimisationHandler optimisations(optimisation_file_name); // create optimisation class
+    std::vector<OptimisationHandler::OptimisationData> optimisationData; // all keyword optimisation vector
+    std::vector<OptimisationHandler::OptimisationData> relevantOptimisationData; // keyword optimisations for the current device
     NotificationHandler notifications(appID, shortcutPath, exePath); // initialise the notification service
 
+    if (data.enableAutomaticOptimisations) {
+        optimisations.init(); // initialise optimisation class 
 
+        // get optimisations, and filter for relevant ones for the current device
+        optimisationData = optimisations.readOptimisationData();
+        for (auto opt : optimisationData) {
+            if (opt.targetDevice == data.currentDevice) {
+                relevantOptimisationData.push_back(opt);
+            }
+        }
+    }
 
     // start the thread that constantly checks for new events
     std::thread checkEventsWorker(checkEventsThread,
         std::ref(myEvents),
         std::ref(notifications),
-        std::ref(data)
+        std::ref(data),
+        std::ref(relevantOptimisationData)
     );
 
     // start the thread that will show events when they arrive

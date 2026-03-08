@@ -148,12 +148,14 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MCalendar.cpp" />
     <ClCompile Include="NotificationHandler.cpp" />
+    <ClCompile Include="OptimisationHandler.cpp" />
     <ClCompile Include="ParameterHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EventLogger.h" />
     <ClInclude Include="MCalendar.h" />
     <ClInclude Include="NotificationHandler.h" />
+    <ClInclude Include="OptimisationHandler.h" />
     <ClInclude Include="ParameterHandler.h" />
   </ItemGroup>
   <ItemGroup>

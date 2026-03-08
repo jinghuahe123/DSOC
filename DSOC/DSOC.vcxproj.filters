@@ -27,7 +27,10 @@
     <ClCompile Include="NotificationHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UIWindow.cpp">
+    <ClCompile Include="EventLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OptimisationHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,7 +44,10 @@
     <ClInclude Include="NotificationHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UIWindow.h">
+    <ClInclude Include="EventLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OptimisationHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -21,8 +21,9 @@ public:
 
 	using json = nlohmann::json;
 	// write events to data file
-	// figure out why requires friend attribute to compile
-	friend void to_json(json& j, const CalendarEvent event) {
+	// these functions required to be free functions, not member functions therefore need to be friend
+	// defines how a CalendarEvent becomes JSON - used internally by nlohmann
+	friend void to_json(json& j, const CalendarEvent& event) {
 		j = json{
 			{"title", event.title},
 			{"startHour", event.startHour},
@@ -36,7 +37,8 @@ public:
 	};
 
 	// read events from data file
-	friend void from_json(const json& j, CalendarEvent event) {
+	// defines how JSON becomes a CalendarEvent - used internally by nlohmann
+	friend void from_json(const json& j, CalendarEvent& event) {
 		j.at("title").get_to(event.title);
 		j.at("startHour").get_to(event.startHour);
 		j.at("startMinute").get_to(event.startMinute);
