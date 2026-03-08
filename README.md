@@ -12,12 +12,14 @@ DSOC gives the user full flexibility of exactly which device a notification will
 
 *A second example: a student prefers to work on a more powerful desktop tower where possible, but requires using a laptop during lectures. DSOC allows the student to set reminders for certain assignments to the tower computer so they will show when he returns to his accomodation, even if his tower computer is powered off when he sends the reminder.*
 
+
 ## Features
 
 - Simple, scalable configuration for device-specificity
 - Automatic, user-customisable, event grouping based on keywords for simpler configurations
 - Unobtrusive background application
 - Full offline support
+
 
 ## DSOC Prerequisites 
 
@@ -26,6 +28,7 @@ DSOC gives the user full flexibility of exactly which device a notification will
 Due to offline support, Classic Microsoft Outlook is required for this application to function. 
 
 This is usually pre-installed alongside the Microsoft Office Suite. If this is not included on your device, please download it from [here](https://support.microsoft.com/en-gb/office/install-or-reinstall-classic-outlook-on-a-windows-pc-5c94902b-31a5-4274-abb0-b07f4661edf5).
+
 
 ## Usage
 
@@ -50,6 +53,17 @@ If automatic optimisations are enabled, DSOC will then also generate a file call
 | ------------ | ------------------------------------------------------------------- |
 | keyword      | The word/phrase that will be scanned for in the event.              |
 | target       | The ID of the computer to send the notification to.                 |
+
+
+## Error Codes
+
+| Code | Description                                                                 |
+| ---- | --------------------------------------------------------------------------- |
+| 10   | Failed to initialise Outlook Calendar Object.                               | 
+| 21   | No parameters in .json config file / config file corrupt.                   |
+| 23   | Failed to load parameters from config file.                                 |
+| 27   | No parameters in .json optimisation file / optimisation file corrupt.       |
+| 31   | Failed to register notification service.                                    |
 
 If an event contains a keyword that has been set, DSOC will route that event to the specified target, so that the 'SENDTO: ' header is not always required. 
 
