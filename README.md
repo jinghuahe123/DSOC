@@ -15,7 +15,7 @@ DSOC gives the user full flexibility of exactly which device a notification will
 ## Features
 
 - Simple, scalable configuration for device-specificity
-- ~Automatic, user-customisable, event grouping based on keywords for simpler configurations~ (in progress)
+- Automatic, user-customisable, event grouping based on keywords for simpler configurations
 - Unobtrusive background application
 - Full offline support
 
@@ -35,9 +35,19 @@ On the first run, DSOC will generate a configuration file called 'DSOC-config.js
 | --------------------------------- | ----------------------------------------------------------------------- |
 | device_name                       | Unique ID for each computer                                             |
 | enable_automatic_optimisations    | Toggles the automatic event groupings.                                  |
-| update_time                       | How long (seconds) between updating the event cache from Outlook.       |
-| reminder_time                     | How long (seconds) before an event starts to send a reminder.           |
+| update_time                       | Time (seconds) between updating the event cache from Outlook.           |
+| reminder_time                     | Time (seconds) before an event starts to send a reminder.               |
 
+If automatic optimisations are enabled, DSOC will then also generate a file called 'optimisations.json'. Fill out the fields, and copy paste the existing format if more fields are required.
+
+**Please note**, the 'key' (leading number before each block of optimisation data) has to be unique for each piece of data. The easiest way to implement this is just to label them chronologically starting from 0./
+
+| Parameter    | Description                                                         |
+| ------------ | ------------------------------------------------------------------- |
+| keyword      | The word/phrase that will be scanned for in the event.              |
+| target       | The ID of the computer to send the notification to.                 |
+
+If an event contains a keyword that has been set, DSOC will route that event to the specified target, so that the 'SENDTO: ' header is not always required. 
 
 
 
