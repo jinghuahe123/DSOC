@@ -36,6 +36,7 @@ On the first run, DSOC will generate a configuration file called 'DSOC-config.js
 
 | Parameter                         | Description                                                             |
 | --------------------------------- | ----------------------------------------------------------------------- |
+| _console_                         | _Boolean for whether console window should spawn when run (debugging)_  |
 | device_name                       | Unique ID for each computer                                             |
 | enable_automatic_optimisations    | Toggles the automatic event groupings.                                  |
 | update_time                       | Time (seconds) between updating the event cache from Outlook.           |
@@ -54,6 +55,7 @@ If automatic optimisations are enabled, DSOC will then also generate a file call
 | keyword      | The word/phrase that will be scanned for in the event.              |
 | target       | The ID of the computer to send the notification to.                 |
 
+To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 
 ## Error Codes
 
