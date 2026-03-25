@@ -10,8 +10,6 @@ DSOC gives the user full flexibility of exactly which device a notification will
 
 *A example of a use-case: an office worker has his work email and calendar logged in on his personal device to ensure he can recieve on-call meeting notifications, but he prefers not to be notified of non-urgent messages on his personal devices. DSOC can specifically reroute emergency meetings to his personal device, but filter everything else to his work devices.*
 
-*A second example: a student prefers to work on a more powerful desktop tower where possible, but requires using a laptop during lectures. DSOC allows the student to set reminders for certain assignments to the tower computer so they will show when he returns to his accomodation, even if his tower computer is powered off when he sends the reminder.*
-
 
 ## Features
 
