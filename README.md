@@ -55,6 +55,8 @@ If automatic optimisations are enabled, DSOC will then also generate a file call
 | keyword      | The word/phrase that will be scanned for in the event.              |
 | target       | The ID of the computer to send the notification to.                 |
 
+If an event contains a keyword that has been set, DSOC will route that event to the specified target, so that the 'SENDTO: ' header is not always required. 
+
 To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 
 ## Error Codes
@@ -67,7 +69,7 @@ To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 | 27   | No parameters in .json optimisation file / optimisation file corrupt.       |
 | 31   | Failed to register notification service.                                    |
 
-If an event contains a keyword that has been set, DSOC will route that event to the specified target, so that the 'SENDTO: ' header is not always required. 
+
 
 
 
