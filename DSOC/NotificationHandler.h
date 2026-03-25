@@ -13,11 +13,12 @@
 
 class NotificationHandler {
 public:
-	inline static bool appInitialised = false;
+	inline static bool appInitialised = false; // static as each app needs to be registerd once not per object instance
 	static std::wstring getExecutablePath();
 
 	NotificationHandler(const std::wstring& appId, const std::wstring& shortcutPath, const std::wstring exePath);
 	
+	void sendNotification(const std::wstring& title, const std::wstring& message, int startHour, int startMinute);
 	void sendNotification(const std::wstring& title, const std::wstring& message);
 
 private:

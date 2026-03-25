@@ -215,9 +215,9 @@ bool withinSetTimeFrame(ParameterHandler::ParameterData& data) {
 
     // create a copy in the format of std::tm
     // otherwise when intialising, std::tm gives garbage non-set values
-    std::time_t now_copy = std::chrono::system_clock::to_time_t(now);
+    std::time_t now_copy = std::chrono::system_clock::to_time_t(now); // first store in time_t standard time format
     std::tm today;
-    localtime_s(&today, &now_copy);
+    localtime_s(&today, &now_copy); // microsoft api converts to std::tm format
 
     // doesn't always work if spans multiple hours
     /*
@@ -317,6 +317,7 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
                     for (CalendarEvent& event : events) {
                         event.targetDevice = getTarget(event.description);
 
+                        // not necessary, but this block could be simplified to one flag and simultaneous checking
                         bool descriptionContainsKeyword = false; // flag if event description contains one of the keywords in the optimisation
                         bool titleContainsKeyword = false; // flag if the title contains one of the keywords in the optimisation
                         for (const auto& keywordData : relevantOptimsationData) {
@@ -330,7 +331,7 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
                             }
                         }
 
-                        if (event.targetDevice == data.currentDevice || descriptionContainsKeyword || titleContainsKeyword) { // does it require checking date as well as time, or does following logfile write handle that already?
+                        if (event.targetDevice == data.currentDevice || descriptionContainsKeyword || titleContainsKeyword) {
                             relevantEvents.push_back(event);
                         }
                     }
@@ -367,9 +368,8 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
                         std::string modified_description = getContentsAfterTarget(event.description);
 
                         //notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
-                        notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()));
+                        notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()), event.startHour, event.startMinute);
                         // std::cout << "NEW EVENT NOTIFYING" << std::endl;
-                        // more logic to display notification as an upcoming event rather than event about to happen
                     }
                 }
 
@@ -428,7 +428,7 @@ void notifyUpcomingEventThread(EventLogger &myEvents, NotificationHandler& notif
                     std::string modified_description = getContentsAfterTarget(event.description);
 
                     //notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(event.description.begin(), event.description.end()));
-                    notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()));
+                    notifications.sendNotification(std::wstring(event.title.begin(), event.title.end()), std::wstring(modified_description.begin(), modified_description.end()), event.startHour, event.startMinute);
                     event.notified = true;
                     std::vector<EventLogger::CalendarEvent> logEvents = formatEventsToLogfile(latestEvents.duplicateEvents);
                     myEvents.writeEvents(logEvents);
@@ -446,6 +446,12 @@ void notifyUpcomingEventThread(EventLogger &myEvents, NotificationHandler& notif
 
 std::atomic<bool> consoleAppRunning = true;
 void consoleApp() {
+    /* a bit of documentation about the APIs used here for reference:
+        https://learn.microsoft.com/en-us/windows/console/allocconsole // AllocConsole usage
+        https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/freopen-wfreopen?view=msvc-170 // freopen usage
+        https://gist.github.com/Yoticc/87e178f346b7e86af9239c4e0f2e5770 // specifically freopen a console window example
+    */
+
     // spawn a console window
     AllocConsole();
     freopen("CONOUT$", "w", stdout);
@@ -536,11 +542,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     
 
-    // requried so first display of events is not null
+    // requried delay so first display of events is not null
     notifications.sendNotification(L"Welcome to DSOC. ", L"DSOC is running in the background.");
     std::this_thread::sleep_for(std::chrono::seconds(2)); 
 
     // std::cout << data.currentDevice << std::endl;
+
+    /* a bit of documentation for future reference:
+        https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey // RegisterHotKey usage 
+        https://learn.microsoft.com/en-us/windows/win32/winmsg/about-messages-and-message-queues // message queue handling
+        https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage // GetMessage
+        https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msg // further message handling
+        https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-hotkey // msg struct WM_HOTKEY usage for key press via RegisterHotKey
+    */
 
     // add a hotkey (Ctrl+Shift+Q) that is used to trigger program quit
     RegisterHotKey(NULL, 1, MOD_CONTROL | MOD_SHIFT, 'Q');
@@ -548,13 +562,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // windows programs run on message-based systems
     // this creates a message object that will recieve a message when the hotkey is pressed
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0)) { // loop that constantly gets any upcoming messages
+    BOOL bRet;
+    while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) { // loop that constantly gets any upcoming messages
         // checks if the message is the hotkey set before
         if (msg.message == WM_HOTKEY && msg.wParam == 1) {
             notifications.sendNotification(L"Program Exiting...", L"Ctrl+Shift+Q Pressed");
 
             break; // when quit message is recieved, immediately break out of the loop
         }
+
+        // (from message queue documentation) is TranslateMessage and DispatchMessage strictly necessary?
+        // docs says is required, but program works fine without TranslateMessage to recieve input
+        // DispatchMessage shouldn't be needed as not a UI window?
     }
 
     UnregisterHotKey(NULL, 1); // delets the registered hotkey created previously (cleanup)

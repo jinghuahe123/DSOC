@@ -19,6 +19,8 @@ MCalendar::~MCalendar() {
 }
 
 // convert _bstr_t to std::string
+// basically COM's own string implementation 
+// https://learn.microsoft.com/en-us/previous-versions/windows/desktop/automat/bstr 
 std::string MCalendar::BstrToString(const _bstr_t& bstr) {
     if (bstr.length() == 0) return "";
     return std::string((char*)bstr);

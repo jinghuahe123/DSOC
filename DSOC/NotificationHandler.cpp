@@ -72,6 +72,11 @@ bool NotificationHandler::registerAppID() {
 }
 
 bool NotificationHandler::createAppIDShortcut() {
+    /* some documentation for referencing
+        https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ishelllinkw // all ShellLink methods documentation
+        https://learn.microsoft.com/en-us/windows/win32/api/objidl/nn-objidl-ipersistfile // all IpersistFile methods documentation
+        // more to add
+    */
     //CoInitialize(nullptr);
 
     // hresult is written to when an operation success/failure is logged
@@ -116,14 +121,21 @@ bool NotificationHandler::createAppIDShortcut() {
     return SUCCEEDED(hresult);
 }
 
-void NotificationHandler::sendNotification(const std::wstring& title, const std::wstring& message) {
+void NotificationHandler::sendNotification(const std::wstring& title, const std::wstring& message, int startHour, int startMinute) {
 	using namespace winrt;
 	using namespace Windows::UI::Notifications;
 	using namespace winrt::Windows::Data::Xml::Dom;
 
+    std::wstring hour_s = std::to_wstring(startHour);
+    std::wstring minute_s = std::to_wstring(startMinute);
+
+    if (hour_s.size() == 1) hour_s = L"0" + hour_s;
+    if (minute_s.size() == 1) minute_s = L"0" + minute_s;
+
 	// notification in xml format
     // could turn this into a separate document, but don't want a random .xml file floating around, accessable to the user?
-	std::wstring xmlPayload = LR"(<toast> <visual> <binding template="ToastGeneric"> <text>)" + title + LR"(</text> <text>)" + message + LR"(</text> </binding> </visual> </toast>)";
+	//std::wstring xmlPayload = LR"(<toast> <visual> <binding template="ToastGeneric"> <text>)" + title + LR"(</text> <text>)" + message + LR"(</text> </binding> </visual> </toast>)";
+    std::wstring xmlPayload = LR"(<toast><visual><binding template="ToastGeneric"> <text>)" + title + LR"(</text> <text>Start time: )" + hour_s + L":" + minute_s + +LR"(</text> <text>)" + message + LR"(</text></binding></visual></toast>)";
 
 	// parse as xml
 	XmlDocument xml;
@@ -133,9 +145,35 @@ void NotificationHandler::sendNotification(const std::wstring& title, const std:
 	ToastNotification toast(xml);
 
 	// create the notifing action
+    // appid required for unpackaged apps
 	ToastNotifier notifier = ToastNotificationManager::CreateToastNotifier(APP_ID);
 
 	// push the notification
 	notifier.Show(toast);
 	
+}
+
+void NotificationHandler::sendNotification(const std::wstring& title, const std::wstring& message) {
+    using namespace winrt;
+    using namespace Windows::UI::Notifications;
+    using namespace winrt::Windows::Data::Xml::Dom;
+
+    // notification in xml format
+    // could turn this into a separate document, but don't want a random .xml file floating around, accessable to the user?
+    std::wstring xmlPayload = LR"(<toast> <visual> <binding template="ToastGeneric"> <text>)" + title + LR"(</text> <text>)" + message + LR"(</text> </binding> </visual> </toast>)";
+
+    // parse as xml
+    XmlDocument xml;
+    xml.LoadXml(xmlPayload);
+
+    // create the notification element
+    ToastNotification toast(xml);
+
+    // create the notifing action
+    // appid required for unpackaged apps
+    ToastNotifier notifier = ToastNotificationManager::CreateToastNotifier(APP_ID);
+
+    // push the notification
+    notifier.Show(toast);
+
 }
