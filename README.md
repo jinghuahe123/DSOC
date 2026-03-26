@@ -67,8 +67,3 @@ To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 | 27   | No parameters in .json optimisation file / optimisation file corrupt.       |
 | 31   | Failed to register notification service.                                    |
 
-
-
-
-
-More documentation will be added accordingly as the project progresses. 
