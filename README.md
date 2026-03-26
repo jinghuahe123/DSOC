@@ -10,8 +10,6 @@ DSOC gives the user full flexibility of exactly which device a notification will
 
 *A example of a use-case: an office worker has his work email and calendar logged in on his personal device to ensure he can recieve on-call meeting notifications, but he prefers not to be notified of non-urgent messages on his personal devices. DSOC can specifically reroute emergency meetings to his personal device, but filter everything else to his work devices.*
 
-*A second example: a student prefers to work on a more powerful desktop tower where possible, but requires using a laptop during lectures. DSOC allows the student to set reminders for certain assignments to the tower computer so they will show when he returns to his accomodation, even if his tower computer is powered off when he sends the reminder.*
-
 
 ## Features
 
@@ -55,6 +53,8 @@ If automatic optimisations are enabled, DSOC will then also generate a file call
 | keyword      | The word/phrase that will be scanned for in the event.              |
 | target       | The ID of the computer to send the notification to.                 |
 
+If an event contains a keyword that has been set, DSOC will route that event to the specified target, so that the 'SENDTO: ' header is not always required. 
+
 To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 
 ## Error Codes
@@ -67,7 +67,7 @@ To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 | 27   | No parameters in .json optimisation file / optimisation file corrupt.       |
 | 31   | Failed to register notification service.                                    |
 
-If an event contains a keyword that has been set, DSOC will route that event to the specified target, so that the 'SENDTO: ' header is not always required. 
+
 
 
 
