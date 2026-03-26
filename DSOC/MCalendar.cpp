@@ -27,6 +27,7 @@ std::string MCalendar::BstrToString(const _bstr_t& bstr) {
 }
 
 SYSTEMTIME MCalendar::getDate() {
+    // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime // systemtime docs
     SYSTEMTIME today;
     GetLocalTime(&today);
 
@@ -34,6 +35,13 @@ SYSTEMTIME MCalendar::getDate() {
 }
 
 bool MCalendar::initialise() {
+    /*
+    useful Microsoft docs
+    https://learn.microsoft.com/zh-cn/office/vba/api/outlook.application.getnamespace // GetNamespace() connect to outlook
+    https://learn.microsoft.com/en-us/office/vba/api/outlook.namespace.logon // logs into outlook
+    */
+
+
     try {
         HRESULT instance = pOutlook.CreateInstance(__uuidof(Application)); // is native com, maybe change for .net implementation (easier to manage)?
         if (FAILED(instance)) {
@@ -64,6 +72,13 @@ bool MCalendar::initialise() {
 }
 
 _ItemsPtr MCalendar::getCalendarItems() {
+    /*
+    https://learn.microsoft.com/en-us/office/vba/api/outlook.namespace.getdefaultfolder // for getting default folder storage
+    https://learn.microsoft.com/en-us/office/vba/api/outlook.conversationheader.getitems // for getting items within folder
+    https://learn.microsoft.com/en-us/office/vba/api/access.grouplevel.sortorder // for sorting folder
+    */
+
+
     if (!initialized) {
         std::cerr << "Calendar initialise not called yet - check production code." << std::endl;
         std::cerr << "Initialising automatically." << std::endl;
@@ -96,6 +111,14 @@ _ItemsPtr MCalendar::getCalendarItems() {
 }
 
 std::vector<MCalendar::CalendarEvent> MCalendar::getTodaysEvents(_ItemsPtr& pItems) {
+    // technically, this could return void and write the events to a vector within its own object
+    // still would need to do conversions to use in other classes?
+    /*
+    https://learn.microsoft.com/en-us/office/vba/api/outlook.items.getfirst // getting first item within a list (MS outlook items)
+    https://learn.microsoft.com/en-us/windows/win32/api/oleauto/nf-oleauto-varianttimetosystemtime // converting calendar time to system time format
+    */
+
+
     std::vector<CalendarEvent> todaysEvents; // vector that stores structs (CalendarEvent event) of events
 
     try {

@@ -33,6 +33,13 @@ NotificationHandler::NotificationHandler(const std::wstring& appId, const std::w
 
 // registers the app into the registry
 bool NotificationHandler::registerAppID() {
+    /*
+    useful docs
+    https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regcreatekeyexa // RegCreateKeyExW creating a key
+    https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regsetvalueexw // RegSetValueExW setting a value in the key
+    */
+
+
     // variables for the key and the registry path to put it in
 	HKEY hKey; // 'Handle to Registry Key', like a pointer to the registry key - represents the open key
 	std::wstring registryKeyPath = L"Software\\Classes\\" + APP_ID;
@@ -75,6 +82,7 @@ bool NotificationHandler::createAppIDShortcut() {
     /* some documentation for referencing
         https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ishelllinkw // all ShellLink methods documentation
         https://learn.microsoft.com/en-us/windows/win32/api/objidl/nn-objidl-ipersistfile // all IpersistFile methods documentation
+        https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance // CoCreateInstance documentation
         // more to add
     */
     //CoInitialize(nullptr);
@@ -85,7 +93,12 @@ bool NotificationHandler::createAppIDShortcut() {
     // create a shorcut
     // Microsoft refers to these as shell links
     IShellLinkW* shellLink = nullptr; // shellLink refers to an in-memory (cached) .lnk file
-    HRESULT hresult = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink)); // constructs shellLink into a COM object
+    HRESULT hresult = CoCreateInstance( // constructs shellLink into a COM object
+        CLSID_ShellLink, // class ID that identifies the COM instance - create a shell link object
+        nullptr, // create as itself, not inside another object 
+        CLSCTX_INPROC_SERVER, // loads the object into the same process as the notification class
+        IID_PPV_ARGS(&shellLink) // returns constructed object into the pointer
+    ); 
     if (FAILED(hresult)) return false;
 
     shellLink->SetPath(executablePath.c_str()); // sets the executable path the link points to
@@ -122,6 +135,10 @@ bool NotificationHandler::createAppIDShortcut() {
 }
 
 void NotificationHandler::sendNotification(const std::wstring& title, const std::wstring& message, int startHour, int startMinute) {
+    /*
+    docs
+    https://learn.microsoft.com/en-us/windows/apps/develop/notifications/app-notifications/send-local-toast-desktop-cpp-wrl
+    */
 	using namespace winrt;
 	using namespace Windows::UI::Notifications;
 	using namespace winrt::Windows::Data::Xml::Dom;

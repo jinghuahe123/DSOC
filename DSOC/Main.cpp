@@ -298,7 +298,7 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
     CoInitialize(NULL);
 
     { // proper scope for MCalendar to exit cleanly.
-        MCalendar myCalendar;
+        MCalendar myCalendar; // creates calendar object from class
 
         using namespace std::chrono;
 

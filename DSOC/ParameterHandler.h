@@ -5,6 +5,9 @@
 #include <fstream>
 #include <iostream>
 
+// https://github.com/nlohmann/json // Main Github for nlohmann
+// https://json.nlohmann.me/features/arbitrary_types/ // for to_json and from_json implementations
+
 class ParameterHandler {
 public:
 	// struct for program settings
