@@ -19,6 +19,7 @@ NotificationHandler::NotificationHandler(const std::wstring& appId, const std::w
 
     // initialise the windows notification api
 	//winrt::init_apartment();
+    // https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-setcurrentprocessexplicitappusermodelid
     winrt::init_apartment(winrt::apartment_type::multi_threaded);
 	SetCurrentProcessExplicitAppUserModelID(APP_ID.c_str()); // is this required if registry is set?
 
@@ -83,7 +84,6 @@ bool NotificationHandler::createAppIDShortcut() {
         https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ishelllinkw // all ShellLink methods documentation
         https://learn.microsoft.com/en-us/windows/win32/api/objidl/nn-objidl-ipersistfile // all IpersistFile methods documentation
         https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance // CoCreateInstance documentation
-        // more to add
     */
     //CoInitialize(nullptr);
 
@@ -163,6 +163,7 @@ void NotificationHandler::sendNotification(const std::wstring& title, const std:
 
 	// create the notifing action
     // appid required for unpackaged apps
+    // https://learn.microsoft.com/en-us/uwp/api/windows.ui.notifications.toastnotificationmanager.createtoastnotifier?view=winrt-26100
 	ToastNotifier notifier = ToastNotificationManager::CreateToastNotifier(APP_ID);
 
 	// push the notification

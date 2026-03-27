@@ -12,7 +12,7 @@
 #include <sstream>
 #include <vector>
 
-// import office
+// import office - necessarily required?
 #import "libid:2DF8D04C-5BFA-101B-BDE5-00AA0044DE52" \
     version("2.8") \
     rename_namespace("Office") \

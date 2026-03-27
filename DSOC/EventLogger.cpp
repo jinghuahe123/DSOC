@@ -59,7 +59,7 @@ std::vector<EventLogger::CalendarEvent> EventLogger::readEvents() {
 
         // loop through the json objects and turn them into CalendarEvent structs
         CalendarEvent event = value.get<CalendarEvent>(); // from_json called here
-        event.index = std::stoi(key);
+        event.index = std::stoi(key); // string to integer
         events.push_back(event);
     }
 

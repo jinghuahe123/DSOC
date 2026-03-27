@@ -96,7 +96,7 @@ std::vector<CalendarEvent> getEvents(MCalendar& object) {
     _ItemsPtr pItems = object.getCalendarItems();
     std::vector<CalendarEvent> events; // = myCalendar.getTodaysEvents(pItems);
     std::vector<MCalendar::CalendarEvent> details = object.getTodaysEvents(pItems);
-    for (size_t i = 0; i < details.size(); i++) {       // FIX: more efficient copying needed
+    for (size_t i = 0; i < details.size(); i++) {       // FIX: more efficient copying needed?
         CalendarEvent event;
         event.title = details[i].title;
         event.startHour = details[i].startHour;
@@ -124,7 +124,7 @@ std::string getTarget(std::string& description) {
     }
 
     // detect if target has been set by user
-    if (target.length() > 7 && (target.substr(0, 7) == "SENDTO:" || target.substr(0, 7) == "sendto:" || target.substr(0, 7) == "Sendto:")) { // figure out better way for case insensitivity (try changing all to uppercase before compare)
+    if (target.length() > 7 && (target.substr(0, 7) == "SENDTO:" || target.substr(0, 7) == "sendto:" || target.substr(0, 7) == "Sendto:")) { // figure out better way for case insensitivity?
         if (target.length() > 8 && target[7] == ' ') return target.substr(8);
         return target.substr(7);
     }
@@ -142,7 +142,7 @@ std::string getContentsAfterTarget(std::string& description) {
 
     // no new line found, return the whole string
     if (position == std::string::npos) {
-        modified_description = description;
+        modified_description = description; // means if description only contains SENTO: header, header will also be returned. is a fix required?
     }
     else { // find first character after that new line
         size_t startPosition = description.find_first_not_of("\r\n", position);
@@ -259,7 +259,7 @@ void displayEvents(std::vector<CalendarEvent> events) {
             const CalendarEvent& event = events[i];
 
             std::cout << "Title: " << event.title << std::endl;
-            std::cout << "Time: "
+            std::cout << "Time: " // set fill for padding times to __:__
                 << std::setw(2) << std::setfill('0') << event.startHour << ":"
                 << std::setw(2) << std::setfill('0') << event.startMinute << " - "
                 << std::setw(2) << std::setfill('0') << event.endHour << ":"
@@ -301,7 +301,8 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
         MCalendar myCalendar; // creates calendar object from class
 
         using namespace std::chrono;
-
+        // steady clock used for finding time differences
+        // system clock used for absolute times
         auto lastRun = steady_clock::now() - seconds(data.updateTime); // force update on furst run
 
         while (checkEventsRunning) {
@@ -317,7 +318,7 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
                     for (CalendarEvent& event : events) {
                         event.targetDevice = getTarget(event.description);
 
-                        // not necessary, but this block could be simplified to one flag and simultaneous checking
+                        // not necessarily required, but this block could be simplified to one flag and simultaneous checking
                         bool descriptionContainsKeyword = false; // flag if event description contains one of the keywords in the optimisation
                         bool titleContainsKeyword = false; // flag if the title contains one of the keywords in the optimisation
                         for (const auto& keywordData : relevantOptimsationData) {
@@ -363,7 +364,7 @@ void checkEventsThread(EventLogger &myEvents, NotificationHandler &notifications
 
 
                 for (CalendarEvent& event : comparedevents.uniqueNewEvents) {
-                    // change string to wstring conversion to support chinese characters if time
+                    // change string to wstring conversion to support chinese characters?
                     if (!event.notified) {
                         std::string modified_description = getContentsAfterTarget(event.description);
 
@@ -511,10 +512,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     OptimisationHandler optimisations(optimisation_file_name); // create optimisation class
     std::vector<OptimisationHandler::OptimisationData> optimisationData; // all keyword optimisation vector
     std::vector<OptimisationHandler::OptimisationData> relevantOptimisationData; // keyword optimisations for the current device
-    NotificationHandler notifications(appID, shortcutPath, exePath); // initialise the notification service
+    NotificationHandler notifications(appID, shortcutPath, exePath); // create the notification service
 
     if (data.enableAutomaticOptimisations) {
-        optimisations.init(); // initialise optimisation class 
+        optimisations.init(); // initialise optimisation service 
 
         // get optimisations, and filter for relevant ones for the current device
         optimisationData = optimisations.readOptimisationData();

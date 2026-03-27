@@ -18,6 +18,7 @@ public:
 
 	NotificationHandler(const std::wstring& appId, const std::wstring& shortcutPath, const std::wstring exePath);
 	
+	// overload required, as notifications are also sent about app status, not just the upcoming events
 	void sendNotification(const std::wstring& title, const std::wstring& message, int startHour, int startMinute);
 	void sendNotification(const std::wstring& title, const std::wstring& message);
 

@@ -37,15 +37,15 @@ private:
 	// default program settings
 	json params = {
 		{"parameters", {
-			{"device_name", ""},
-			{"enable_automatic_optimisations", true},
+			{"device_name", ""}, // unique device name for filtering
+			{"enable_automatic_optimisations", true}, // whether keyword checking is enabled
 			{"update_time", 15}, // 15 seconds - how often the thread to get new events should update
 			{"reminder_time", 600}, // 10*60 seconds; 10mins - how long before an event a notification should occur
-			{"console", 0},
-			{"start_hour", 0},
-			{"start_minute", 0},
-			{"end_hour", 0},
-			{"end_minute", 0}
+			{"console", 0}, // debugging console enabled flag
+			{"start_hour", 0}, // program active from this hour
+			{"start_minute", 0}, // program active from this minute
+			{"end_hour", 0}, // program deactive from this hour
+			{"end_minute", 0} // program deactive from this minute
 		}}
 	};
 	json loaded_params;
