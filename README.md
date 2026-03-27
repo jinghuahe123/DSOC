@@ -55,6 +55,8 @@ If automatic optimisations are enabled, DSOC will then also generate a file call
 
 If an event contains a keyword that has been set, DSOC will route that event to the specified target, so that the 'SENDTO: ' header is not always required. 
 
+Once these are filled out, run the program a third time to start it. 
+
 To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 
 ## Error Codes
