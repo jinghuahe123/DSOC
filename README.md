@@ -46,7 +46,7 @@ On the first run, DSOC will generate a configuration file called 'DSOC-config.js
 
 If automatic optimisations are enabled, DSOC will then also generate a file called 'optimisations.json'. Fill out the fields, and copy paste the existing format if more fields are required.
 
-**Please note**, the 'key' (leading number before each block of optimisation data) has to be unique for each piece of data. The easiest way to implement this is just to label them chronologically starting from 0./
+**Please note**, the 'key' (leading number before each block of optimisation data) has to be unique for each piece of data. The easiest way to implement this is just to label them chronologically starting from 0.
 
 | Parameter    | Description                                                         |
 | ------------ | ------------------------------------------------------------------- |
