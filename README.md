@@ -27,6 +27,8 @@ Due to offline support, Classic Microsoft Outlook is required for this applicati
 
 This is usually pre-installed alongside the Microsoft Office Suite. If this is not included on your device, please download it from [here](https://support.microsoft.com/en-gb/office/install-or-reinstall-classic-outlook-on-a-windows-pc-5c94902b-31a5-4274-abb0-b07f4661edf5).
 
+Microsoft Visual C++ Redistributable for Visual Studio 2015–2022 (x64) is also required for the non-standalone release. Please download it from [Microsoft Visual C++ Redistributable for Visual Studio 2015–2022 (x64).](https://www.microsoft.com/en-gb/download/details.aspx?id=48145)
+
 
 ## Usage
 
