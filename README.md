@@ -1,6 +1,8 @@
 # DSOC (Device-Specific Outlook Calendar)
 
-A City of London School SPARC Project submitted to CREST.
+A City of London School SPARC Project submitted to CREST. 
+
+**This software is distributed ‘as-is’ and without any warranty, whether express or implied, including but not limited to the implied warranties of merchantability, fitness for a particular purpose, and non‑infringement. The developers shall not be held liable for any claim, damages, or other liability arising from the use of this software.**
 
 ## Introduction
 
