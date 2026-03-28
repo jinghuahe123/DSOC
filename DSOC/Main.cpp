@@ -496,7 +496,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     const std::wstring appID = L"DeviceSpecificMicrosoftCalendar"; // program id required for notifications
     const std::wstring exePath = NotificationHandler::getExecutablePath(); // program executable path to pass to notificationhandler
     const std::wstring shortcutPath = std::wstring(_wgetenv(L"APPDATA")) + L"\\Microsoft\\Windows\\Start Menu\\Programs\\" + std::filesystem::path(exePath).stem().wstring() + L".lnk"; // path to place link to program (req. for notifications)
-    
+
     // initialise classes
     ParameterHandler myParams(file_name); // initialise the json parameter service
     ParameterHandler::ParameterData data = myParams.getData(); // get program settings from log file

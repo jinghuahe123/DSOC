@@ -10,6 +10,7 @@ ParameterHandler::ParameterHandler(const std::string& file_name) {
 
         file << std::setw(4) << params;
         file.close();
+        MessageBoxA(NULL, "Please input program parameters data into .json file.", "ERROR", MB_OK); // error box for user to notify missing file. 
         std::cerr << "Please input program parameters into .json file." << std::endl;
         exit(21);
     }
@@ -45,6 +46,8 @@ ParameterHandler::ParameterData ParameterHandler::getData() {
 
     } catch (const json::exception& e) {
         std::cerr << "JSON parsing error: " << e.what() << std::endl;
+        MessageBoxA(NULL, e.what(), "JSON ERROR", MB_OK);
+
         std::exit(23);
     }
 

@@ -6,7 +6,8 @@ MCalendar::MCalendar() {
 #endif
     // CoInitialize(NULL);
     if (!initialise()) {
-        std::cerr << "Failed to initialize calendar." << std::endl;
+        std::cerr << "Failed to initialise calendar." << std::endl;
+        MessageBoxA(NULL, "Failed to initialise calendar", "ERROR", MB_OK);
         std::exit(10);
     }
 }

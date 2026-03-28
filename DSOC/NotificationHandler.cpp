@@ -27,6 +27,7 @@ NotificationHandler::NotificationHandler(const std::wstring& appId, const std::w
     // if not registered, set app ID in registry, and create start menu shortcut
     // annoyingly both are required for windows to display a notification
     if (!appInitialised && (!registerAppID() || !createAppIDShortcut())) {
+        MessageBoxA(NULL, "App registration failed.", "ERROR", MB_OK);
         std::cerr << "App registration failed. \n";
         std::exit(31);
     }

@@ -16,6 +16,7 @@ void OptimisationHandler::init() {
         writeOptimisationData(data);
 
         std::cerr << "Please input program optimisation data into .json file." << std::endl;
+        MessageBoxA(NULL, "Please input program optimisation data into .json file.", "ERROR", MB_OK); // error box to tell user to imput optimsation data before running
         exit(27);
     }
 }

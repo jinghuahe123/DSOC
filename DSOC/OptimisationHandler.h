@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
+#include <Windows.h>
 
 class OptimisationHandler {
 public:
