@@ -61,6 +61,8 @@ If an event contains a keyword that has been set, DSOC will route that event to 
 
 Once these are filled out, run the program a third time to start it. 
 
+To schedule a notification to show up on a specific device, set a flag "SENDTO: \<target device name\>" on the first line of the calendar event description in Outlook. Similarly, for filtering notifications out of a certain device, ensure the "SENTO: " flag does not contain the target device name. 
+
 To Quit the program, press the sequence of keys: **Ctrl+Shift+Q**
 
 ## Error Codes
